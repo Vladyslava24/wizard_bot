@@ -38,7 +38,7 @@ public class BotConfig {
         WizardBot wizardBot = new WizardBot(options, telegramFacade);
         wizardBot.setBotUserName("@wizard_test24_bot");
         wizardBot.setBotToken("1596141497:AAEoKb25KvjlDbFOVuEiPE9Z1hDBf2gCRW0");
-        wizardBot.setWebHookPath(" https://1f2dc19a291f.ngrok.io");
+        wizardBot.setWebHookPath("https://6c0985154434.ngrok.io");
         return wizardBot;
     }
 

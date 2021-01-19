@@ -4,10 +4,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ua.kpi.tef.wizard_bot.botapi.BotState;
 import ua.kpi.tef.wizard_bot.botapi.InputMessageHandler;
 import ua.kpi.tef.wizard_bot.cache.UserDataCache;
 import ua.kpi.tef.wizard_bot.service.ReplyMessagesService;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -17,13 +22,10 @@ import ua.kpi.tef.wizard_bot.service.ReplyMessagesService;
 @Slf4j
 @Component
 public class AskDestinyHandler implements InputMessageHandler {
-    private static final String ASK_MESSAGE = "Привет! Хочешь узнать свою судьбу?";
-    private UserDataCache userDataCache;
+    private static final String ASK_MESSAGE = "Привет! хочешь узнать свою судьбу?";
     private ReplyMessagesService messagesService;
 
-    public AskDestinyHandler(UserDataCache userDataCache,
-                             ReplyMessagesService messagesService) {
-        this.userDataCache = userDataCache;
+    public AskDestinyHandler(ReplyMessagesService messagesService) {
         this.messagesService = messagesService;
     }
 
@@ -38,13 +40,43 @@ public class AskDestinyHandler implements InputMessageHandler {
     }
 
     private SendMessage processUsersInput(Message inputMsg) {
-        int userId = inputMsg.getFrom().getId();
         long chatId = inputMsg.getChatId();
 
         SendMessage replyToUser = messagesService.getReplyMessage(chatId, ASK_MESSAGE);
-        userDataCache.setUsersCurrentBotState(userId, BotState.FILLING_PROFILE);
-
+        replyToUser.setReplyMarkup(getInlineMessageButtons());
         return replyToUser;
+    }
+
+    private InlineKeyboardMarkup getInlineMessageButtons() {
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+
+        InlineKeyboardButton buttonYes = new InlineKeyboardButton().setText("Да");
+        InlineKeyboardButton buttonNo = new InlineKeyboardButton().setText("Нет, спасибо");
+        InlineKeyboardButton buttonIwillThink = new InlineKeyboardButton().setText("Я подумаю");
+        InlineKeyboardButton buttonIdontKnow = new InlineKeyboardButton().setText("Еще не определился");
+
+        //Every button must have callBackData, or else not work !
+        buttonYes.setCallbackData("buttonYes");
+        buttonNo.setCallbackData("buttonNo");
+        buttonIwillThink.setCallbackData("buttonIwillThink");
+        buttonIdontKnow.setCallbackData("-");
+
+        List<InlineKeyboardButton> keyboardButtonsRow1 = new ArrayList<>();
+        keyboardButtonsRow1.add(buttonYes);
+        keyboardButtonsRow1.add(buttonNo);
+
+        List<InlineKeyboardButton> keyboardButtonsRow2 = new ArrayList<>();
+        keyboardButtonsRow2.add(buttonIwillThink);
+        keyboardButtonsRow2.add(buttonIdontKnow);
+
+
+        List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
+        rowList.add(keyboardButtonsRow1);
+        rowList.add(keyboardButtonsRow2);
+
+        inlineKeyboardMarkup.setKeyboard(rowList);
+
+        return inlineKeyboardMarkup;
     }
 }
 
